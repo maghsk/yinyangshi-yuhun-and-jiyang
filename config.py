@@ -1,6 +1,6 @@
 import random
 
-FACTOR = 2 / 3
+FACTOR = 2# / 3
 SLEEP_TIME_DICT = {
     'hunshi': 40.5,
     'huntu': 44.0
@@ -20,3 +20,5 @@ DROP_BONUS_PIXELS = [
     [(970, 262), (1094, 284)],
     [(1255, 555), (1442, 696)]
 ]
+
+EXIT_PIXEL = [(30,52), (65,85)]

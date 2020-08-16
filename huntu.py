@@ -39,6 +39,7 @@ def main():
 
     print("关闭掉落加成中...")
     do_series(hwnd_list, DROP_BONUS_PIXELS, a=0.3, b=0.8)
+    do_series(hwnd_list, [EXIT_PIXEL], a=0.5, b=0.5)
     end = time.time()
     print("全部完成。共用时 {0} 秒。".format(end - start))
 
