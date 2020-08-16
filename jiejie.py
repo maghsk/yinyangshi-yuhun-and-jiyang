@@ -30,12 +30,18 @@ pixels = [
 t_list = [5, 2, 2, 2, 2]
 
 
+def seconds_to_02d_str(secs):
+    return "%02d:%02d:%02d" % (secs//3600, (secs//60) % 60, secs % 60)
+
+
 def work(wname, due_time, start_time):
     sleep_time = due_time - start_time
     if sleep_time < 0:
         sleep_time = 0.5 + random.random() * 0.1
-    i = int(sleep_time)
-    print("%s: %02d:%02d:%02d   due: %f" % (wname, i//3600, (i//60) % 60, i % 60, due_time))
+    tmp = int(sleep_time)
+    iso_due_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(due_time))
+    print("%s: 剩余 %s 至 %s ,  float: %f" %
+          (wname, seconds_to_02d_str(tmp), iso_due_time, due_time))
     time.sleep(sleep_time)
     fa_hwnd = win32gui.FindWindow(0, wname)
     hwnd_list = []
@@ -70,16 +76,21 @@ def main(argv):
         start_time = time.time()
         if job['mode'] == 'remain':
             h, m, s = map(int, job['time'].split(':'))
-            p = Process(target=work, args=(job['wname'], start_time+s+m*60+h*3600+random.random(), start_time))
+            p = Process(target=work, args=(
+                job['wname'], start_time+s+m*60+h*3600+random.random(), start_time))
         elif job['mode'] == 'due':
-            p = Process(target=work, args=(job['wname'], job['time'], start_time))
+            p = Process(target=work, args=(
+                job['wname'], job['time'], start_time))
         p_list.append(p)
         p.start()
         time.sleep(0.005)
-    
+
     for p in p_list:
         p.join()
 
 
 if __name__ == "__main__":
+    print("        mode: due, remain")
+    print("  due format: %f")
+    print("float format: %02d:%02d:%02d")
     main(sys.argv)
