@@ -7,8 +7,9 @@ import time
 import random
 from screenshot import do_screen_shot
 import sys
+import os
 import json
-from multiprocessing import Process
+from multiprocessing import Process, Manager
 
 shi_shen = [
     (309/1822, 826/1025),
@@ -20,12 +21,30 @@ shi_shen = [
 ]
 
 pixels = [
-    (942/1822, 453/1025),  # 中间那个点
+    (642/1205, 377/678),  # 中间那个点
     (92/1822, 924/1025),  # 选择类别
     (244/1822, 465/1025),  # 选择N
     shi_shen[5],  # 选择第六个式神
     (695/1205, 511/678)    # 确认寄养
 ]
+
+pre_pixels = [
+    (401/1205, 317/678), # 启动 40
+    (569/1205, 397/678), # 跳过动画 20
+    (597/1205, 585/678), # 进入服务器 40
+
+    (1133/1205, 600/678), # 卷轴 5
+    (452/1205, 594/678), #寮 5
+    (1133/1205, 600/678), #重复一下 5
+    (452/1205, 594/678), #重复一下 5
+
+    (918/1205, 615/678), # 结界 10
+    (642/1205, 377/678), # 式神育成 10
+    (1113/1205, 86/678), # 右上角 5
+    (692/1205, 484/678), # 前往查看 10
+]
+
+pre_t_list = [40, 20, 40, 5,5,5,5, 10, 10, 5, 10]
 
 t_list = [5, 2, 2, 2, 2]
 
@@ -34,24 +53,51 @@ def seconds_to_02d_str(secs):
     return "%02d:%02d:%02d" % (secs//3600, (secs//60) % 60, secs % 60)
 
 
-def work(wname, due_time, start_time):
-    sleep_time = due_time - start_time
-    if sleep_time < 0:
-        sleep_time = 0.5 + random.random() * 0.1
-    tmp = int(sleep_time)
+def print_time(wname, due_time):
+    sleep_time = int(max(0, due_time - time.time()))
     iso_due_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(due_time))
     print("%s: 剩余 %s 至 %s ,  float: %f" %
-          (wname, seconds_to_02d_str(tmp), iso_due_time, due_time))
-    time.sleep(sleep_time)
+          (wname, seconds_to_02d_str(sleep_time), iso_due_time, due_time))
+
+
+def work(info, cmd, wname, due_time):
+    sleep_time = due_time - time.time()
+    if sleep_time < 0:
+        sleep_time = 0.5 + random.random()
+    print_time(wname, due_time)
+
+    time.sleep(max(0.05, sleep_time - 600))
     fa_hwnd = win32gui.FindWindow(0, wname)
-    hwnd_list = []
-    win32gui.EnumChildWindows(fa_hwnd, call_back, hwnd_list)
-    hwnd = hwnd_list[0]
+
+    if fa_hwnd == 0:
+        os.system('start "" ' + cmd)
+        time.sleep(100)
+        fa_hwnd = win32gui.FindWindow(0, wname)
+        hwnd_list = []
+        win32gui.EnumChildWindows(fa_hwnd, call_back, hwnd_list)
+        hwnd = hwnd_list[0]
+        x1, y1, x2, y2 = win32gui.GetWindowRect(hwnd)
+        dx = x2-x1
+        dy = y2-y1
+
+        do_screen_shot("screenshots\\{0}-pre-0.bmp".format(wname), hWnd=hwnd)
+        for i, (t, (fx, fy)) in enumerate(zip(pre_t_list, pre_pixels)):
+            x, y = dx*fx, dy*fy
+            doClick(hwnd, int(round(x)), int(round(y)))
+            time.sleep(t)
+            do_screen_shot(
+                "screenshots\\{0}-pre-{1}.bmp".format(wname, i+1), hWnd=hwnd)
+    else:
+        hwnd_list = []
+        win32gui.EnumChildWindows(fa_hwnd, call_back, hwnd_list)
+        hwnd = hwnd_list[0]
+        x1, y1, x2, y2 = win32gui.GetWindowRect(hwnd)
+        dx = x2-x1
+        dy = y2-y1
+
+    time.sleep(max(0.05, due_time - time.time()))
 
     do_screen_shot("screenshots\\{0}-0.bmp".format(wname), hWnd=hwnd)
-    x1, y1, x2, y2 = win32gui.GetWindowRect(hwnd)
-    dx = x2-x1
-    dy = y2-y1
     for i, (t, (fx, fy)) in enumerate(zip(t_list, pixels)):
         x, y = dx*fx, dy*fy
         doClick(hwnd, int(round(x)), int(round(y)))
@@ -60,33 +106,54 @@ def work(wname, due_time, start_time):
             "screenshots\\{0}-{1}.bmp".format(wname, i+1), hWnd=hwnd)
 
     win32gui.PostMessage(fa_hwnd, win32con.WM_CLOSE, 0, 0)
+    ed_dtime = time.time() + 3600.0 * 6.0 + 10 + random.random()
+    print_time("何时结束？" + wname + "：", ed_dtime)
+    info.append({
+        'wname': wname,
+        'time': ed_dtime,
+        'mode': 'due',
+        'cmd': cmd
+    })
 
 
 def main(argv):
     try:
         file_name = argv[1]
-        with open('jiejie_info.json', 'r', encoding='utf-8') as fp:
+        with open(file_name, 'r', encoding='utf-8') as fp:
             info = json.load(fp)
     except:
         print('usage: python {0} <*.json>'.format(argv[0]))
         return
-    p_list = []
-    for job in info:
-        print(job)
-        start_time = time.time()
-        if job['mode'] == 'remain':
-            h, m, s = map(int, job['time'].split(':'))
-            p = Process(target=work, args=(
-                job['wname'], start_time+s+m*60+h*3600+random.random(), start_time))
-        elif job['mode'] == 'due':
-            p = Process(target=work, args=(
-                job['wname'], job['time'], start_time))
-        p_list.append(p)
-        p.start()
-        time.sleep(0.005)
+    manager = Manager()
 
-    for p in p_list:
-        p.join()
+    for i in range(1000):
+        return_info = manager.list()
+        p_list = []
+        for job in info:
+            print(job)
+            start_time = time.time()
+            if job['mode'] == 'remain':
+                h, m, s = map(int, job['time'].split(':'))
+                due_time = start_time+s+m*60+h*3600+random.random()
+            elif job['mode'] == 'due':
+                due_time = job['time']
+
+            p = Process(target=work, args=(return_info, job['cmd'], job['wname'], due_time))
+            p_list.append(p)
+            p.start()
+            time.sleep(0.005)
+
+        for p in p_list:
+            p.join()
+            
+        for p in p_list:
+            p.close()
+        
+        print(return_info)
+
+        info = list(return_info)
+        with open('jiejie_info.json', 'w', encoding='utf-8') as fp:
+            json.dump(info, fp, ensure_ascii=False)
 
 
 if __name__ == "__main__":

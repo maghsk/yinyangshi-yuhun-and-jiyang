@@ -38,7 +38,7 @@ def do_series(hwnd_list, pixels, a=0.25, b=0.41):
     pass
 
 
-def rect_norm_rand_gen(lu, rd, factor=FACTOR):
+def rect_norm_rand_gen(lu, rd, factor=1.0/FACTOR):
     return tuple(range_norm_rand_gen((l + r) / 2, (r - l) / 3, (l, r), factor=factor) for l, r in zip(lu, rd))
 
 

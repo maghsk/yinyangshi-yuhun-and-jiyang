@@ -1,6 +1,6 @@
 import random
 
-FACTOR = 2# / 3
+FACTOR = 2
 SLEEP_TIME_DICT = {
     'hunshi': 40.5,
     'huntu': 44.0

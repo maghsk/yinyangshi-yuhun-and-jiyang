@@ -1,12 +1,1 @@
-[
-    {
-        "wname": "司机",
-        "time": 1597555782.678594,
-        "mode": "due"
-    },
-    {
-        "wname": "打手",
-        "time": 1597556282.073488,
-        "mode": "due"
-    }
-]
+[{"wname": "打手", "time": 1597904666.0921955, "mode": "due", "cmd": "\"C:\\Program Files (x86)\\Nox\\bin\\Nox.exe\" -clone:Nox_1"}, {"wname": "司机", "time": 1597904831.9629595, "mode": "due", "cmd": "\"C:\\Program Files (x86)\\Nox\\bin\\Nox.exe\" -clone:Nox_0"}]

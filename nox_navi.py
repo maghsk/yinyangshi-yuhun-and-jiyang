@@ -8,7 +8,7 @@ import sys
 
 
 def main(argv):
-    father_hwnd = win32gui.FindWindow(0, u'司机')
+    father_hwnd = win32gui.FindWindow(0, u'打手')
     hwnd_list = []
     win32gui.EnumChildWindows(father_hwnd, call_back, hwnd_list)
     hwnd = hwnd_list[0]

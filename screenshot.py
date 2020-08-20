@@ -10,7 +10,7 @@ import win32ui
 
 
 def mul_factor(x):
-    return int(x*FACTOR)
+    return int(x * FACTOR)
 
 
 def do_screen_shot(file_name, hWnd):
