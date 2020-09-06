@@ -8,13 +8,8 @@ import random
 from PIL import ImageGrab
 import win32ui
 
-
-def mul_factor(x):
-    return int(x * FACTOR)
-
-
 def do_screen_shot(file_name, hWnd):
-    x1, y1, x2, y2 = map(mul_factor, win32gui.GetWindowRect(hWnd))
+    x1, y1, x2, y2 = win32gui.GetWindowRect(hWnd)
     print("screenshot coordinate (scaled)", x1, y1, x2, y2)
     dx = x2-x1
     dy = y2-y1

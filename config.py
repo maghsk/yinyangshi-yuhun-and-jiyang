@@ -1,9 +1,9 @@
 import random
 
-FACTOR = 2
+FACTOR = 1.25
 SLEEP_TIME_DICT = {
     'hunshi': 40.5,
-    'huntu': 44.0
+    'huntu': 45.0
 }
 FATHER_WINDOW_NAMES = [u'司机', u'打手']
 CLASSNAME_IN_NOX = 'ScreenBoardClassWindow'

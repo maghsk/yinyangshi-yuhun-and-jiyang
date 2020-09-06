@@ -17,15 +17,15 @@ shi_shen = [
     (694/1822, 823/1025),
     (881/1822, 808/1025),
     (1073/1822, 831/1025),
-    (1269/1822, 817/1025)
+    (1026/1280, 572/720)
 ]
 
 pixels = [
     (642/1205, 377/678),  # 中间那个点
     (92/1822, 924/1025),  # 选择类别
-    (244/1822, 465/1025),  # 选择N
+    (170/1280, 326/720),  # 选择N
     shi_shen[5],  # 选择第六个式神
-    (695/1205, 511/678)    # 确认寄养
+    (734/1280, 546/720)    # 确认寄养
 ]
 
 pre_pixels = [
@@ -60,40 +60,15 @@ def print_time(wname, due_time):
           (wname, seconds_to_02d_str(sleep_time), iso_due_time, due_time))
 
 
-def work(info, cmd, wname, due_time):
+def work(info, cmd, wname, due_time, client):
     sleep_time = due_time - time.time()
     if sleep_time < 0:
         sleep_time = 0.5 + random.random()
     print_time(wname, due_time)
 
     time.sleep(max(0.05, sleep_time - 600))
-    fa_hwnd = win32gui.FindWindow(0, wname)
 
-    if fa_hwnd == 0:
-        os.system('start "" ' + cmd)
-        time.sleep(100)
-        fa_hwnd = win32gui.FindWindow(0, wname)
-        hwnd_list = []
-        win32gui.EnumChildWindows(fa_hwnd, call_back, hwnd_list)
-        hwnd = hwnd_list[0]
-        x1, y1, x2, y2 = win32gui.GetWindowRect(hwnd)
-        dx = x2-x1
-        dy = y2-y1
-
-        do_screen_shot("screenshots\\{0}-pre-0.bmp".format(wname), hWnd=hwnd)
-        for i, (t, (fx, fy)) in enumerate(zip(pre_t_list, pre_pixels)):
-            x, y = dx*fx, dy*fy
-            doClick(hwnd, int(round(x)), int(round(y)))
-            time.sleep(t)
-            do_screen_shot(
-                "screenshots\\{0}-pre-{1}.bmp".format(wname, i+1), hWnd=hwnd)
-    else:
-        hwnd_list = []
-        win32gui.EnumChildWindows(fa_hwnd, call_back, hwnd_list)
-        hwnd = hwnd_list[0]
-        x1, y1, x2, y2 = win32gui.GetWindowRect(hwnd)
-        dx = x2-x1
-        dy = y2-y1
+    hwnd = getHWND(wname, cmd, client)
 
     time.sleep(max(0.05, due_time - time.time()))
 
@@ -132,13 +107,14 @@ def main(argv):
         for job in info:
             print(job)
             start_time = time.time()
+            client = job['client']
             if job['mode'] == 'remain':
                 h, m, s = map(int, job['time'].split(':'))
                 due_time = start_time+s+m*60+h*3600+random.random()
             elif job['mode'] == 'due':
                 due_time = job['time']
 
-            p = Process(target=work, args=(return_info, job['cmd'], job['wname'], due_time))
+            p = Process(target=work, args=(return_info, job['cmd'], job['wname'], due_time, client))
             p_list.append(p)
             p.start()
             time.sleep(0.005)

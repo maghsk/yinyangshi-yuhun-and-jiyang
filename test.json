@@ -1,14 +1,14 @@
 [
     {
         "wname": "司机",
-        "time": "0:0:0",
-        "mode": "remain",
+        "time": 1598193363.394495,
+        "mode": "due",
         "cmd": "\"C:\\Program Files (x86)\\Nox\\bin\\Nox.exe\" -clone:Nox_0"
     },
     {
         "wname": "打手",
-        "time": "0:0:0",
-        "mode": "remain",
+        "time": 1598557417.445417,
+        "mode": "due",
         "cmd": "\"C:\\Program Files (x86)\\Nox\\bin\\Nox.exe\" -clone:Nox_1"
     }
 ]
